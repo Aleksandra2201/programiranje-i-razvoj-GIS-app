@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aerodromi i letovi</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        header {
+            background: #0078d7;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        #map {
+            height: 60vh;
+            border-bottom: 2px solid #444;
+        }
+        #info {
+            height: 25vh;
+            padding: 10px;
+            background: #f0f8ff;
+            border-top: 1px solid #ccc;
+        }
+        #info label {
+            font-weight: bold;
+            color: #333;
+        }
+        #airportDetails {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e6f7ff;
+            border: 1px solid #b3daff;
+            border-radius: 5px;
+        }
+        select {
+            margin-top: 5px;
+            padding: 5px;
+            font-size: 14px;
+        }
+        footer {
+            background: #0078d7;
+            color: white;
+            text-align: center;
+            padding: 5px 0;
+            font-size: 14px;
+        }
+        .flight-schedule {
+            margin-top: 10px;
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        Aerodromi i letovi
+    </header>
+    <div id="map"></div>
+    <div id="info">
+        <label for="airportInfo">Informacije o aerodromu: </label>
+        <select id="airportInfo">
+            <option value="">Izaberite aerodrom...</option>
+        </select>
+        <div id="airportDetails">Odaberite aerodrom za više informacija.</div>
+        <div id="flightSchedule" class="flight-schedule"></div>
+    </div>
+    <footer>
+        &copy; 2024 Aerodromi i letovi - Sva prava zadržana.
+    </footer>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([48.8566, 2.3522], 4);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        var airportSelect = document.getElementById('airportInfo');
+        var airportDetails = document.getElementById('airportDetails');
+        var flightSchedule = document.getElementById('flightSchedule');
+
+        var airports = [
+            {
+                name: "Aerodrom Charles de Gaulle",
+                coords: [49.0097, 2.5479],
+                polygon: [
+                    [49.012, 2.540],
+                    [49.015, 2.550],
+                    [49.005, 2.555],
+                    [49.002, 2.545]
+                ],
+                email: "info@cdgaeroport.com",
+                phone: "+33 1 70 36 39 50",
+                description: "Glavni međunarodni aerodrom u Parizu.",
+                flights: ["08:00 - London", "12:30 - Berlin", "15:45 - Madrid"]
+            },
+            {
+                name: "Aerodrom Heathrow",
+                coords: [51.4700, -0.4543],
+                polygon: [
+                    [51.474, -0.460],
+                    [51.478, -0.450],
+                    [51.466, -0.440],
+                    [51.462, -0.450]
+                ],
+                email: "info@heathrow.com",
+                phone: "+44 20 8745 1234",
+                description: "Najprometniji aerodrom u Velikoj Britaniji.",
+                flights: ["09:15 - Pariz", "13:45 - Rim", "18:00 - Amsterdam"]
+            }
+        ];
+
+        airports.forEach(function(airport, index) {
+            L.marker(airport.coords)
+                .addTo(map)
+                .bindPopup(`<b>${airport.name}</b>`)
+                .on('click', function() {
+                    airportSelect.value = index;
+                    displayAirportDetails(index);
+                });
+
+            L.polygon(airport.polygon, {
+                color: 'blue',
+                fillColor: '#3388ff',
+                fillOpacity: 0.4
+            }).addTo(map);
+
+            var option = document.createElement('option');
+            option.value = index;
+            option.textContent = airport.name;
+            airportSelect.appendChild(option);
+        });
+
+        var route = [airports[0].coords, airports[1].coords];
+        L.polyline(route, {
+            color: 'red',
+            weight: 2,
+            opacity: 0.7,
+            smoothFactor: 1
+        }).addTo(map).bindPopup('Putanja između aerodroma');
+
+        function displayAirportDetails(index) {
+            var airport = airports[index];
+            airportDetails.innerHTML = `
+                <strong>${airport.name}</strong><br>
+                <strong>Email:</strong> ${airport.email}<br>
+                <strong>Telefon:</strong> ${airport.phone}<br>
+                <strong>Opis:</strong> ${airport.description}
+            `;
+
+            flightSchedule.innerHTML = '<strong>Raspored letova:</strong><br>' +
+                airport.flights.map(flight => `<div>- ${flight}</div>`).join('');
+        }
+    </script>
+</body>
+</html>
